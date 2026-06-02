@@ -1,4 +1,3 @@
-import json
 from logic import enc_logic, dec_logic, gen_logic
 
 import argparse
@@ -15,16 +14,6 @@ def parser():
     args = parser.parse_args()
     return args
     
-
-def json_parser() -> dict:
-    try:
-        with open("settings.json", 'r', encoding='utf-8') as f:
-            config = json.load(f)
-        return config
-    except Exception as ex:
-        print(f"Ошибка!: {ex}")
-
-
 def main():
     action = parser()
     settings = json_parser()
