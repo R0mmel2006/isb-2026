@@ -1,6 +1,8 @@
 from logic import enc_logic, dec_logic, gen_logic
+from load_and_save.py import json_parser
 
 import argparse
+
 
 
 def parser():
