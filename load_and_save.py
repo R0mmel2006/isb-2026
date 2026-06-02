@@ -2,53 +2,84 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 
+def _read_binary_file(file_path: str) -> bytes:
+    """
+    Вспомогательная функция для чтения бинарного файла
+    """
+    with open(file_path, 'rb') as file:
+        return file.read()
+
+def _write_binary_file(file_path: str, data: bytes) -> None:
+    """
+    Вспомогательная функция для записи в бинарный файл
+    """
+    with open(file_path, 'wb') as file:
+        file.write(data)
+
 def write_symmetric_key(symmetric_key: bytes, symmetric_path:str) -> None:
     """
     Сериализация симметричного ключа в файл
     """
     try:
-        with open(symmetric_path, 'wb') as key_file:
-            key_file.write(symmetric_key)
+        _write_binary_file(symmetric_path, symmetric_key)
     except Exception as ex:
         print(f"Ошибка!: {ex}")
 
-def write_asymmetric_key(public_key:RSAPublicKey, private_key:RSAPrivateKey, public_path:str, private_path:str) -> None:
+def write_public_key(public_key: RSAPublicKey, public_path: str) -> None:
+    """
+    Сериализация открытого ключа в файл
+    """
+    try:
+        public_bytes = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        _write_binary_file(public_path, public_bytes)
+    except Exception as ex:
+        print(f"Ошибка!: {ex}")
+
+def write_private_key(private_key: RSAPrivateKey, private_path: str) -> None:
+    """
+    Сериализация закрытого ключа в файл
+    """
+    try:
+        private_bytes = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+        _write_binary_file(private_path, private_bytes)
+    except Exception as ex:
+        print(f"Ошибка!: {ex}")
+
+def write_asymmetric_key(public_key: RSAPublicKey, private_key: RSAPrivateKey, public_path:str, private_path:str) -> None:
     """
     Сериализация асимметричных ключей в файл
     """
-    try:
-        with open(public_path, 'wb') as public_out:
-                public_out.write(public_key.public_bytes(encoding=serialization.Encoding.PEM,
-                    format=serialization.PublicFormat.SubjectPublicKeyInfo))
-        with open(private_path, 'wb') as private_out:
-                private_out.write(private_key.private_bytes(encoding=serialization.Encoding.PEM,
-                    format=serialization.PrivateFormat.TraditionalOpenSSL,
-                    encryption_algorithm=serialization.NoEncryption()))
-    except Exception as ex:
-        print(f"Ошибка!: {ex}")
+    write_public_key(public_key, public_path)
+    write_private_key(private_key, private_path)
 
 def read_symmetric_key(symmetric_key_path:str) -> bytes:
     """
     Чтение ключа из файла
     """
     try:
-        with open(symmetric_key_path, mode='rb') as key_file: 
-            key = key_file.read()
-            return key
+        return _read_binary_file(symmetric_key_path)
     except Exception as ex:
         print(f"Ошибка!: {ex}")
+        return b""
 
 def read_asymmetric_key(public_key_path:str, private_key_path) -> tuple:
     """
     Чтение RSA ключей из файлов
     """
     try:
-        with open(public_key_path, 'rb') as pem_in:
-            public_bytes = pem_in.read()
-            public_key = load_pem_public_key(public_bytes)
-        with open(private_key_path, 'rb') as pem_in:
-            private_bytes = pem_in.read()
-            private_key = load_pem_private_key(private_bytes,password=None,)
+        public_bytes = _read_binary_file(public_key_path)
+        public_key = load_pem_public_key(public_bytes)
+        
+        private_bytes = _read_binary_file(private_key_path)
+        private_key = load_pem_private_key(private_bytes, password=None)
+        
         return public_key, private_key
     except Exception as ex:
         print(f"Ошибка!: {ex}")
@@ -58,18 +89,16 @@ def read_text(initial_file_path:str) -> bytes:
     Чтение текста из файла
     """
     try:
-        with open(initial_file_path, 'rb') as f:
-            return f.read()
+        return _read_binary_file(initial_file_path)
     except Exception as ex:
         print(f"Ошибка!: {ex}")
         return b""
     
-def write_text(text: bytes,  enc_file_path: str) -> None:
+def write_text(text: bytes, enc_file_path: str) -> None:
     """
     Запись расшифрованного текста в файл
     """
     try:
-        with open(enc_file_path, 'wb') as f:
-            f.write(text)
+        _write_binary_file(enc_file_path, text)
     except Exception as ex:
         print(f"Ошибка!: {ex}")
