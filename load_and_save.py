@@ -1,7 +1,17 @@
+import json
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 
+def json_parser() -> dict:
+    try:
+        with open("settings.json", 'r', encoding='utf-8') as f:
+            config = json.load(f)
+        return config
+    except Exception as ex:
+        print(f"Ошибка!: {ex}")
+        
 def _read_binary_file(file_path: str) -> bytes:
     """
     Вспомогательная функция для чтения бинарного файла
